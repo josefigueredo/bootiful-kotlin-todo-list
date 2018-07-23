@@ -1,24 +1,13 @@
 var path = require('path');
-var webpack = require("webpack")
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
     entry: {
-        app: './app/index.js'
+        app: path.resolve(__dirname, './app/index.js')
     },
     resolve:{
         extensions: [".js", ".jsx"]
     },
-    plugins: [
-        new webpack.LoaderOptionsPlugin({
-            options: {
-                uglify: false
-            }
-        }),
-        new webpack.DefinePlugin({
-            'process.env': {
-                NODE_ENV: JSON.stringify('development')
-            }
-        })
-    ],
     module: {
         rules: [
             {
@@ -39,7 +28,13 @@ module.exports = {
         ]
     },
     output: {
-        filename: 'bundle.js',
-        path: path.resolve(__dirname, './dist/META-INF/resources/webjars/family-budget-ui')
-    }
+        filename: '[name]_bundle.js',
+        path: path.resolve(__dirname + "../../../target/classes/static")
+    },
+    plugins: [
+        new CleanWebpackPlugin(['dist']),
+        new HtmlWebpackPlugin({
+            template:path.resolve(__dirname,  "../resources/static/index.html")
+        })
+    ]
 };
