@@ -2,6 +2,7 @@ package it.valeriovaudi.todolist
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.cglib.core.Local
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.beans
@@ -24,9 +25,9 @@ import org.springframework.web.reactive.function.server.router
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.net.URI
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
+import java.time.*
+import java.time.temporal.TemporalAccessor
+import java.util.*
 
 
 @SpringBootApplication
@@ -93,7 +94,16 @@ object Config {
                 }
 
                 GET("/todo/item") {
-                    ServerResponse.ok().body(todoRepository.findAll(), Todo::class.java)
+                    val day = it.queryParam("day")
+                            .map { it.toLong() }
+                            .map {
+                                val ofEpochMilli = Instant.ofEpochMilli(it)
+                                ZonedDateTime.ofInstant(ofEpochMilli, ZoneId.of("UTC"))
+                                        .toLocalDate()
+                            }
+                            .orElse(LocalDate.now());
+                    it.principal()
+                            .flatMap { ServerResponse.ok().body(todoRepository.findAll(it.name, day), Todo::class.java) }
                 }
             }
         }
