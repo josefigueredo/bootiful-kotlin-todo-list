@@ -27,7 +27,6 @@ class App extends React.Component {
                 let splittedLocation = response.headers.get("Location").split("/");
                 this.todoRepository.read(splittedLocation[splittedLocation.length - 1])
                     .then(value => {
-                        console.log(value)
                         this.setState((prevState) => ({
                             todoItems: [...prevState.todoItems, value]
                         }))
