@@ -18,6 +18,16 @@ export default class TodoRepository {
             },
             body: JSON.stringify(todo),
             credentials: 'same-origin'
+        })
+    }
+
+    read(todoId) {
+        return fetch(`/todo/item/${todoId}`, {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            },
+            credentials: 'same-origin'
         }).then((response => response.json()))
     }
 

@@ -23,9 +23,20 @@ class App extends React.Component {
 
     newTodoInputOnClickHandler() {
         let inputValue = this.newTodoInputRef.current.value;
-        this.todoRepository.insert({"todo": inputValue}).then((value) => {
-            console.log(value)
-        })
+        this.todoRepository.insert({"todo": inputValue})
+            .then((response) => {
+                console.log(response)
+                console.log(response.headers.get("Location"))
+
+                let splittedLocation = response.headers.get("Location").split("/");
+                this.todoRepository.read(splittedLocation[splittedLocation.length - 1])
+                    .then(value => {
+                        console.log(value)
+                        this.setState((prevState) => ({
+                            todoItems: [...prevState.todoItems, value]
+                        }))
+                    })
+            })
     };
 
     deleteTodoItem(todoId) {
