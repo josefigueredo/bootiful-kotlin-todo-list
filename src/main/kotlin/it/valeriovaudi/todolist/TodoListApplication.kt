@@ -17,7 +17,6 @@ import org.springframework.security.core.userdetails.MapReactiveUserDetailsServi
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.security.crypto.password.NoOpPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.web.reactive.function.server.ServerResponse
@@ -76,6 +75,7 @@ object Config {
         bean {
             router {
                 val todoRepository = ref<TodoRepository>()
+
                 POST("/todo/item") {
                     Mono.zip(it.principal(), it.bodyToMono(TodoRepresentation::class.java))
                             .flatMap { todoRepository.insert(Todo(it.t2.id, it.t1.name, it.t2.date, it.t2.todo)) }
@@ -103,6 +103,13 @@ object Config {
                     it.principal()
                             .flatMap { ServerResponse.ok().body(todoRepository.findAll(it.name, day), Todo::class.java) }
                 }
+
+                DELETE("/todo/item/{id}") {
+                    val todoId = it.pathVariable("id")
+                    it.principal()
+                            .flatMap { todoRepository.delete(todoId, it.name) }
+                            .flatMap { ServerResponse.noContent().build() }
+                }
             }
         }
     }
@@ -129,4 +136,6 @@ class TodoRepository(private val reactiveMongoTemplate: ReactiveMongoTemplate) {
     fun findAll(userName: String, date: LocalDate): Flux<Todo> = reactiveMongoTemplate.find(Query.query(Criteria("userName").`is`(userName).and("date")
             .gte(LocalDateTime.of(date, LocalTime.MIN)).lte(LocalDateTime.of(date, LocalTime.MAX))), Todo::class.java);
 
+
+    fun delete(todoId: String, userName: String) = findOne(todoId, userName).flatMap { reactiveMongoTemplate.remove(it) }
 }

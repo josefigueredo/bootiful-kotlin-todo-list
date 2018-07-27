@@ -10,6 +10,7 @@ class App extends React.Component {
         this.todoRepository = new TodoRepository();
         this.state = {todoItems: []};
         this.newTodoInputRef = React.createRef();
+        this.deleteTodoItem = this.deleteTodoItem.bind(this);
         this.newTodoInputOnClickHandler = this.newTodoInputOnClickHandler.bind(this);
     }
 
@@ -27,6 +28,10 @@ class App extends React.Component {
         })
     };
 
+    deleteTodoItem(todoId){
+        this.todoRepository.delete(todoId);
+    }
+
     render() {
         return (
             <div className="container">
@@ -38,7 +43,7 @@ class App extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-12">
-                        <TodoItemList todoItems={this.state.todoItems}/>
+                        <TodoItemList deleteTodoItem={this.deleteTodoItem} todoItems={this.state.todoItems}/>
                     </div>
                 </div>
             </div>

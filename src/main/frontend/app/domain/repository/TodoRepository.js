@@ -1,5 +1,14 @@
 export default class TodoRepository {
 
+    delete(todoId) {
+        return fetch(`/todo/item/${todoId}`, {
+            method: "DELETE",
+            credentials: 'same-origin'
+        }).then((response => new Promise((resolve, reject) => {
+            resolve(response.status === 204)
+        })));
+    }
+
     insert(todo) {
         return fetch('/todo/item', {
             method: "POST",
