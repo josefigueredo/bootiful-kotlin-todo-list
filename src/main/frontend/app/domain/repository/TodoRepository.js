@@ -1,6 +1,15 @@
 export default class TodoRepository {
 
     insert(todo) {
+        return fetch('/todo/item', {
+            method: "POST",
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(todo),
+            credentials: 'same-origin'
+        }).then((response => response.json()))
     }
 
     readAll(today) {
@@ -11,8 +20,5 @@ export default class TodoRepository {
             },
             credentials: 'same-origin'
         }).then((response => response.json()))
-    }
-
-    read(todoId) {
     }
 }

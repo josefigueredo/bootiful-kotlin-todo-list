@@ -2,7 +2,6 @@ package it.valeriovaudi.todolist
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import org.springframework.cglib.core.Local
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.beans
@@ -17,6 +16,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.MapReactiveUserDetailsService
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.core.userdetails.User
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.NoOpPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
@@ -26,8 +26,6 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.net.URI
 import java.time.*
-import java.time.temporal.TemporalAccessor
-import java.util.*
 
 
 @SpringBootApplication
@@ -57,13 +55,13 @@ class SecurityCOnfig {
     }
 
     @Bean
-    fun userDetailsService(): ReactiveUserDetailsService {
-        return MapReactiveUserDetailsService(User("user", "secret", listOf(SimpleGrantedAuthority("CREATOR"), SimpleGrantedAuthority("CHECKER"))));
+    fun userDetailsService(passwordEncoder: PasswordEncoder): ReactiveUserDetailsService {
+        return MapReactiveUserDetailsService(User("user", passwordEncoder.encode("secret"), listOf(SimpleGrantedAuthority("CREATOR"), SimpleGrantedAuthority("CHECKER"))));
     }
 
     @Bean
     fun passwordEncoder(): PasswordEncoder {
-        return NoOpPasswordEncoder.getInstance()
+        return BCryptPasswordEncoder()
     }
 
 }
