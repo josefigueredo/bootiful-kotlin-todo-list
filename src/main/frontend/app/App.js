@@ -21,15 +21,20 @@ class App extends React.Component {
     }
 
 
-    newTodoInputOnClickHandler()  {
+    newTodoInputOnClickHandler() {
         let inputValue = this.newTodoInputRef.current.value;
         this.todoRepository.insert({"todo": inputValue}).then((value) => {
             console.log(value)
         })
     };
 
-    deleteTodoItem(todoId){
-        this.todoRepository.delete(todoId);
+    deleteTodoItem(todoId) {
+        this.todoRepository.delete(todoId)
+            .then(result => {
+                this.setState((prevState) => ({
+                    todoItems: prevState.todoItems.filter(todoItem => todoItem.id !== todoId)
+                }))
+            });
     }
 
     render() {
