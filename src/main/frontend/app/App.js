@@ -2,6 +2,7 @@ import React from 'react';
 import TodoRepository from "./domain/repository/TodoRepository";
 import TodoItemList from "./component/TodoItemList";
 import NewTodoItem from "./component/NewTodoItem";
+import HeaderRow from "./component/HeaderRow";
 
 class App extends React.Component {
 
@@ -46,10 +47,17 @@ class App extends React.Component {
     render() {
         return (
             <div className="container">
+                <HeaderRow title="Todo List App"/>
+
                 <div className="row">
-                    <div className="col-6">
+                    <div className="col-12">
                         <NewTodoItem newTodoInputRef={this.newTodoInputRef}
                                      newTodoInputOnClickHandler={this.newTodoInputOnClickHandler}/>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-12">
+                        <hr />
                     </div>
                 </div>
                 <div className="row">

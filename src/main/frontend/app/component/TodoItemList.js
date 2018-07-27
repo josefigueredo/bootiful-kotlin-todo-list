@@ -5,7 +5,7 @@ export default ({todoItems, deleteTodoItem}) => {
     return (<table className="table">
         <thead>
         <tr>
-            <th className="text-center" scope="col">Todo</th>
+            <th scope="col">Todo</th>
             <th className="text-center" scope="col">Delete</th>
         </tr>
         </thead>
