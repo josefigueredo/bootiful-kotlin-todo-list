@@ -4,6 +4,9 @@ import TodoItemList from "./component/TodoItemList";
 import NewTodoItem from "./component/NewTodoItem";
 import HeaderRow from "./component/HeaderRow";
 import UpdateTodoItemPopUp from "./component/UpdateTodoItemPopUp";
+import NewTodoUseCase from "./domain/usecase/NewTodoUseCase";
+import UpdateTodoUseCase from "./domain/usecase/UpdateTodoUseCase";
+import DeleteTodoUseCase from "./domain/usecase/DeleteTodoUseCase";
 
 class App extends React.Component {
 
@@ -13,8 +16,32 @@ class App extends React.Component {
         this.state = {todoItems: []};
         this.newTodoInputRef = React.createRef();
         this.updateTodoInputRef = React.createRef();
-
         this.updatePopupId = "updatePopupId";
+
+        this.newTodoUseCase = new NewTodoUseCase(this.todoRepository,
+            value => {
+                this.setState((prevState) => ({todoItems: [...prevState.todoItems, value]}))
+            });
+
+        this.updateTodoUseCase = new UpdateTodoUseCase(this.todoRepository, (todoId, todoTextValue) => {
+            this.setState((prevState) => ({
+                todoItems: prevState.todoItems.map(todoItem => {
+                    if (todoItem.id === todoId) {
+                        todoItem.todo = todoTextValue;
+                    }
+
+                    return todoItem;
+                })
+            }));
+            $("#" + this.updatePopupId).modal("hide")
+        });
+
+        this.deleteTodoUseCase = new DeleteTodoUseCase(this.todoRepository, (todoId) => {
+            this.setState((prevState) => ({
+                todoItems: prevState.todoItems.filter(todoItem => todoItem.id !== todoId)
+            }))
+        });
+
 
         this.deleteTodoItem = this.deleteTodoItem.bind(this);
         this.newTodoInputOnClickHandler = this.newTodoInputOnClickHandler.bind(this);
@@ -29,50 +56,21 @@ class App extends React.Component {
     }
 
     newTodoInputOnClickHandler() {
-        let inputValue = this.newTodoInputRef.current.value;
-        this.todoRepository.insert({"todo": inputValue})
-            .then((response) => {
-                let splittedLocation = response.headers.get("Location").split("/");
-                this.todoRepository.read(splittedLocation[splittedLocation.length - 1])
-                    .then(value => {
-                        this.setState((prevState) => ({
-                            todoItems: [...prevState.todoItems, value]
-                        }))
-                    })
-            })
+        this.newTodoUseCase.newTodo(this.newTodoInputRef.current.value);
     };
 
     deleteTodoItem(todoId) {
-        this.todoRepository.delete(todoId)
-            .then(result => {
-                this.setState((prevState) => ({
-                    todoItems: prevState.todoItems.filter(todoItem => todoItem.id !== todoId)
-                }))
-            });
+        this.deleteTodoUseCase.deleteTodo(todoId);
     }
 
     openUpdatePopUpTodoItem(popupId, todoId, prevTodoText) {
         this.setState({updateItemId: todoId});
         this.updateTodoInputRef.current.value = prevTodoText;
-        $("#" + popupId).modal("show")
+        $("#" + this.updatePopupId).modal("show")
     }
 
-    updateTodoItem(popupId) {
-        this.todoRepository.update(this.state.updateItemId, this.updateTodoInputRef.current.value)
-            .then(result => {
-                if (result === true) {
-                    this.setState((prevState) => ({
-                        todoItems: prevState.todoItems.map(todoItem => {
-                            if (todoItem.id === this.state.updateItemId) {
-                                todoItem.todo = this.updateTodoInputRef.current.value;
-                            }
-
-                            return todoItem;
-                        })
-                    }));
-                    $("#" + popupId).modal("hide")
-                }
-            })
+    updateTodoItem() {
+        this.updateTodoUseCase.updateTodo(this.state.updateItemId, this.updateTodoInputRef.current.value);
     }
 
     render() {
@@ -101,9 +99,8 @@ class App extends React.Component {
                     </div>
                 </div>
 
-                <UpdateTodoItemPopUp updatePopUpTodoItem={this.openUpdatePopUpTodoItem.bind(this, this.updatePopupId)}
-                                     updateTodoInputRef={this.updateTodoInputRef}
-                                     updateTodoItem={this.updateTodoItem.bind(this, this.updatePopupId)}
+                <UpdateTodoItemPopUp updateTodoInputRef={this.updateTodoInputRef}
+                                     updateTodoItem={this.updateTodoItem}
                                      modalId={this.updatePopupId}/>
             </div>
         )
