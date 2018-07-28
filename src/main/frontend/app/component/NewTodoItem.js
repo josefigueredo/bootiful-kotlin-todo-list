@@ -1,10 +1,10 @@
 import React from 'react';
 
-export default ({newTodoInputRef, newTodoInputOnClickHandler}) => {
+export default ({newTodoInputRef, newTodoInputOnClickHandler, buttonText}) => {
     return (<div className="input-group mb-3">
         <textarea className="text-area" ref={newTodoInputRef}/>
         <div className="input-group-append">
-            <span className="input-group-text" onClick={newTodoInputOnClickHandler}> Insert todo</span>
+            <span className="input-group-text" onClick={newTodoInputOnClickHandler}> {buttonText}</span>
         </div>
     </div>)
 }

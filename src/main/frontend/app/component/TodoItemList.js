@@ -1,7 +1,7 @@
 import React from 'react';
 import TodoItem from './TodoItem';
 
-export default ({todoItems, deleteTodoItem}) => {
+export default ({todoItems, deleteTodoItem, openUpdatePopUpTodoItem, openUpdatePopUpId}) => {
     return (<table className="table">
         <thead>
         <tr>
@@ -15,7 +15,11 @@ export default ({todoItems, deleteTodoItem}) => {
                 <TodoItem todoId={item.id} todo={item.todo}/>
                 <td className="text-center">
                     <div className="btn-group" role="group" aria-label="Basic example">
-                        {/*<button type="button" className="btn btn-secondary"><i className="fas fa-edit fa-lg"></i></button>*/}
+                        <button type="button"
+                                className="btn btn-secondary"
+                                onClick={openUpdatePopUpTodoItem.bind(this, openUpdatePopUpId, item.id, item.todo)}>
+                            <i className="fas fa-edit fa-lg"></i>
+                        </button>
                         <button type="button"
                                 onClick={deleteTodoItem.bind(this, item.id)}
                                 className="btn btn-secondary"

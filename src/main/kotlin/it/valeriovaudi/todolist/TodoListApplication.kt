@@ -104,6 +104,13 @@ object Config {
                             .flatMap { ServerResponse.ok().body(todoRepository.findAll(it.name, day), Todo::class.java) }
                 }
 
+                PUT("/todo/item/{id}") {
+                    val todoId = it.pathVariable("id")
+                    Mono.zip(it.principal(), it.bodyToMono(TodoRepresentation::class.java))
+                            .flatMap { todoRepository.update(it.t1.name, todoId, it.t2.todo) }
+                            .flatMap { ServerResponse.noContent().build() }
+                }
+
                 DELETE("/todo/item/{id}") {
                     val todoId = it.pathVariable("id")
                     it.principal()
@@ -131,11 +138,10 @@ class TodoRepository(private val reactiveMongoTemplate: ReactiveMongoTemplate) {
                     .and("userName").`is`(userName)),
                     Todo::class.java)
 
-    fun findAll(): Flux<Todo> = reactiveMongoTemplate.findAll(Todo::class.java);
-
     fun findAll(userName: String, date: LocalDate): Flux<Todo> = reactiveMongoTemplate.find(Query.query(Criteria("userName").`is`(userName).and("date")
             .gte(LocalDateTime.of(date, LocalTime.MIN)).lte(LocalDateTime.of(date, LocalTime.MAX))), Todo::class.java);
 
+    fun update(userName: String, todoId: String, todo: String) = findOne(todoId, userName).flatMap { Mono.just(it.copy(id = it.id,userName = it.userName,date = it.date, todo = todo)) }.flatMap { reactiveMongoTemplate.save(it) }
 
     fun delete(todoId: String, userName: String) = findOne(todoId, userName).flatMap { reactiveMongoTemplate.remove(it) }
 }

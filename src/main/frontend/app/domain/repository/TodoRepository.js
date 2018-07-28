@@ -1,14 +1,5 @@
 export default class TodoRepository {
 
-    delete(todoId) {
-        return fetch(`/todo/item/${todoId}`, {
-            method: "DELETE",
-            credentials: 'same-origin'
-        }).then((response => new Promise((resolve, reject) => {
-            resolve(response.status === 204)
-        })));
-    }
-
     insert(todo) {
         return fetch('/todo/item', {
             method: "POST",
@@ -40,4 +31,28 @@ export default class TodoRepository {
             credentials: 'same-origin'
         }).then((response => response.json()))
     }
+
+    update(todoId, todoText){
+        return fetch(`/todo/item/${todoId}`, {
+            method: "PUT",
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({todo: todoText}),
+            credentials: 'same-origin'
+        }).then((response => new Promise((resolve, reject) => {
+            resolve(response.status === 204)
+        })));
+    }
+
+    delete(todoId) {
+        return fetch(`/todo/item/${todoId}`, {
+            method: "DELETE",
+            credentials: 'same-origin'
+        }).then((response => new Promise((resolve, reject) => {
+            resolve(response.status === 204)
+        })));
+    }
+
 }
