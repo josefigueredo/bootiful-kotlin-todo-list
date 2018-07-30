@@ -13,10 +13,13 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.test.web.reactive.server.returnResult
+import org.springframework.web.reactive.function.BodyInserters
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import java.util.*
@@ -58,7 +61,7 @@ class RouteConfigTest {
 
     @Test
     @WithMockUser
-    fun `first all the todo in the list`() {
+    fun `find all the todo in the list`() {
         val actual = this.webClient.get().uri("/todo/item").exchange().expectStatus().isOk
                 .returnResult(Todo::class.java)
                 .responseBody.collectList().block()
@@ -75,6 +78,27 @@ class RouteConfigTest {
         Assert.assertThat(actual, Is.`is`(expected))
     }
 
+    @Test
+    @WithMockUser(username = "user")
+    fun `insert an other todo in the list`() {
+        val todo = TodoRepresentation(todo = "a todo", date = now)
+
+        val exchange = this.webClient.post().uri("/todo/item")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromObject(todo))
+                .exchange();
+
+        val newTodoId = exchange
+                .returnResult<Unit>()
+                .responseHeaders["Location"]
+                .orEmpty().first()
+                .split("/").last()
+
+
+        val actual = todoMongoRepository.findOne(newTodoId, "user").block();
+
+        Assert.assertThat(actual, Is.`is`(Todo(newTodoId, "user", now, "a todo")))
+    }
+
 
 }
-
