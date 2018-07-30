@@ -4,7 +4,10 @@ import it.valeriovaudi.todolist.TestContextInitializer
 import it.valeriovaudi.todolist.adapter.repository.TodoMongoRepository
 import it.valeriovaudi.todolist.core.model.Todo
 import it.valeriovaudi.todolist.core.repository.TodoRepository
+import it.valeriovaudi.todolist.web.representation.TodoRepresentation
+import org.hamcrest.core.Is
 import org.junit.After
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -18,14 +21,17 @@ import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import java.util.*
 
+
 @ContextConfiguration(initializers = [TestContextInitializer::class])
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner::class)
 class RouteConfigTest {
 
-    val todo1 = Todo(UUID.randomUUID().toString(), "user", LocalDateTime.now(), "todo1")
-    val todo2 = Todo(UUID.randomUUID().toString(), "user", LocalDateTime.now(), "todo2")
-    val todo3 = Todo(UUID.randomUUID().toString(), "user", LocalDateTime.now(), "todo3")
+    val now = LocalDateTime.now()
+
+    val todo1 = Todo(UUID.randomUUID().toString(), "user", now, "todo1")
+    val todo2 = Todo(UUID.randomUUID().toString(), "user", now, "todo2")
+    val todo3 = Todo(UUID.randomUUID().toString(), "user", now, "todo3")
 
 
     @Autowired
@@ -52,10 +58,21 @@ class RouteConfigTest {
 
     @Test
     @WithMockUser
-    fun `first test`() {
-        println(this.webClient.get().uri("/todo/item").exchange().expectStatus().isOk
-                .returnResult(Todo::class.java).responseBody.collectList().block())
+    fun `first all the todo in the list`() {
+        val actual = this.webClient.get().uri("/todo/item").exchange().expectStatus().isOk
+                .returnResult(Todo::class.java)
+                .responseBody.collectList().block()
+                .orEmpty()
+                .map { TodoRepresentation(it.id, it.date, it.todo) }
+                .sortedBy { it.id }
 
+
+        val expected = listOf(TodoRepresentation(todo1.id, now, todo1.todo),
+                TodoRepresentation(todo2.id, now, todo2.todo),
+                TodoRepresentation(todo3.id, now, todo3.todo))
+                .sortedBy { it.id }
+
+        Assert.assertThat(actual, Is.`is`(expected))
     }
 
 
