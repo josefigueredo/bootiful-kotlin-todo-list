@@ -10,13 +10,11 @@ import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
-import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.junit4.SpringRunner
 import java.time.Duration
 import java.time.LocalDate
 
 
-@DirtiesContext
 @DataMongoTest
 @RunWith(SpringRunner::class)
 class TodoMongoRepositoryTest {

@@ -43,10 +43,10 @@ object RouteConfig {
                                 val ofEpochMilli = Instant.ofEpochMilli(it)
                                 ZonedDateTime.ofInstant(ofEpochMilli, ZoneId.of("UTC"))
                                         .toLocalDate()
-                            }
-                            .orElse(LocalDate.now());
+                            }.orElse(LocalDate.now())
+
                     it.principal()
-                            .flatMap { ServerResponse.ok().body(todoRepository.findAll(it.name, day), Todo::class.java) }
+                            .flatMap { ServerResponse.ok().body(todoRepository.findAll(it.name, day).map { TodoRepresentation(it.id, it.date, it.todo) }, TodoRepresentation::class.java) }
                 }
 
                 PUT("/todo/item/{id}") {
