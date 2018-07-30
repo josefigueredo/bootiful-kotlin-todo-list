@@ -1,6 +1,7 @@
 package it.valeriovaudi.todolist.web.config
 
 import it.valeriovaudi.todolist.TestContextInitializer
+import it.valeriovaudi.todolist.TodoTestCaseInitializer
 import it.valeriovaudi.todolist.core.model.Todo
 import it.valeriovaudi.todolist.core.repository.TodoRepository
 import it.valeriovaudi.todolist.web.representation.TodoRepresentation
@@ -29,11 +30,11 @@ import java.util.*
 @RunWith(SpringRunner::class)
 class RouteConfigTest {
 
-    val now = LocalDateTime.now()
+    val now = TodoTestCaseInitializer.now
 
-    val todo1 = Todo(UUID.randomUUID().toString(), "user", now, "todo1")
-    val todo2 = Todo(UUID.randomUUID().toString(), "user", now, "todo2")
-    val todo3 = Todo(UUID.randomUUID().toString(), "user", now, "todo3")
+    val todo1 = TodoTestCaseInitializer.todo1()
+    val todo2 = TodoTestCaseInitializer.todo2()
+    val todo3 = TodoTestCaseInitializer.todo3()
 
 
     @Autowired
@@ -44,18 +45,12 @@ class RouteConfigTest {
 
     @Before
     fun setUp() {
-        Mono.zip(todoMongoRepository.insert(todo1),
-                todoMongoRepository.insert(todo2),
-                todoMongoRepository.insert(todo3))
-                .blockOptional()
+        TodoTestCaseInitializer.initMongo(todoMongoRepository).blockOptional()
     }
 
     @After
     fun tearDown() {
-        Mono.zip(todoMongoRepository.delete(todoId = todo1.id!!, userName = "user"),
-                todoMongoRepository.delete(todoId = todo2.id!!, userName = "user"),
-                todoMongoRepository.delete(todoId = todo3.id!!, userName = "user"))
-                .blockOptional()
+        TodoTestCaseInitializer.tearDownMongo(todoMongoRepository).blockOptional()
     }
 
     @Test
