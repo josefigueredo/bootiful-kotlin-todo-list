@@ -1,7 +1,6 @@
 package it.valeriovaudi.todolist.web.config
 
 import it.valeriovaudi.todolist.TestContextInitializer
-import it.valeriovaudi.todolist.adapter.repository.TodoMongoRepository
 import it.valeriovaudi.todolist.core.model.Todo
 import it.valeriovaudi.todolist.core.repository.TodoRepository
 import it.valeriovaudi.todolist.web.representation.TodoRepresentation
@@ -101,4 +100,7 @@ class RouteConfigTest {
     }
 
 
+    fun `read a specific todo`() {
+
+    }
 }
