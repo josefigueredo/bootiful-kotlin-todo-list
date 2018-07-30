@@ -15,53 +15,55 @@ import it.valeriovaudi.todolist.core.model.Todo
 
 object RouteConfig {
 
+    fun route(todoRepository: TodoRepository) = router {
+        POST("/todo/item") {
+            Mono.zip(it.principal(), it.bodyToMono(TodoRepresentation::class.java))
+                    .flatMap { todoRepository.insert(Todo(it.t2.id, it.t1.name, it.t2.date, it.t2.todo)) }
+                    .flatMap { ServerResponse.created(URI.create("/todo/item/%s".format(it.id))).build() }
+        }
+
+        GET("/todo/item/{id}") {
+            val todoId = it.pathVariable("id")
+            it.principal()
+                    .flatMap { todoRepository.findOne(todoId, it.name) }
+                    .map { Mono.just(TodoRepresentation(it.id, it.date, it.todo)) }
+                    .flatMap { ServerResponse.ok().body(it, TodoRepresentation::class.java) }
+
+        }
+
+        GET("/todo/item") {
+            val day = it.queryParam("day")
+                    .map { it.toLong() }
+                    .map {
+                        val ofEpochMilli = Instant.ofEpochMilli(it)
+                        ZonedDateTime.ofInstant(ofEpochMilli, ZoneId.of("UTC"))
+                                .toLocalDate()
+                    }
+                    .orElse(LocalDate.now());
+            it.principal()
+                    .flatMap { ServerResponse.ok().body(todoRepository.findAll(it.name, day), Todo::class.java) }
+        }
+
+        PUT("/todo/item/{id}") {
+            val todoId = it.pathVariable("id")
+            Mono.zip(it.principal(), it.bodyToMono(TodoRepresentation::class.java))
+                    .flatMap { todoRepository.update(it.t1.name, todoId, it.t2.todo) }
+                    .flatMap { ServerResponse.noContent().build() }
+        }
+
+        DELETE("/todo/item/{id}") {
+            val todoId = it.pathVariable("id")
+            it.principal()
+                    .flatMap { todoRepository.delete(todoId, it.name) }
+                    .flatMap { ServerResponse.noContent().build() }
+        }
+    }
+
     fun routes() = beans {
         bean {
-            router {
-                val todoRepository = ref<TodoRepository>()
+            val todoRepository = ref<TodoRepository>()
 
-                POST("/todo/item") {
-                    Mono.zip(it.principal(), it.bodyToMono(TodoRepresentation::class.java))
-                            .flatMap { todoRepository.insert(Todo(it.t2.id, it.t1.name, it.t2.date, it.t2.todo)) }
-                            .flatMap { ServerResponse.created(URI.create("/todo/item/%s".format(it.id))).build() }
-                }
-
-                GET("/todo/item/{id}") {
-                    val todoId = it.pathVariable("id")
-                    it.principal()
-                            .flatMap { todoRepository.findOne(todoId, it.name) }
-                            .map { Mono.just(TodoRepresentation(it.id, it.date, it.todo)) }
-                            .flatMap { ServerResponse.ok().body(it, TodoRepresentation::class.java) }
-
-                }
-
-                GET("/todo/item") {
-                    val day = it.queryParam("day")
-                            .map { it.toLong() }
-                            .map {
-                                val ofEpochMilli = Instant.ofEpochMilli(it)
-                                ZonedDateTime.ofInstant(ofEpochMilli, ZoneId.of("UTC"))
-                                        .toLocalDate()
-                            }
-                            .orElse(LocalDate.now());
-                    it.principal()
-                            .flatMap { ServerResponse.ok().body(todoRepository.findAll(it.name, day), Todo::class.java) }
-                }
-
-                PUT("/todo/item/{id}") {
-                    val todoId = it.pathVariable("id")
-                    Mono.zip(it.principal(), it.bodyToMono(TodoRepresentation::class.java))
-                            .flatMap { todoRepository.update(it.t1.name, todoId, it.t2.todo) }
-                            .flatMap { ServerResponse.noContent().build() }
-                }
-
-                DELETE("/todo/item/{id}") {
-                    val todoId = it.pathVariable("id")
-                    it.principal()
-                            .flatMap { todoRepository.delete(todoId, it.name) }
-                            .flatMap { ServerResponse.noContent().build() }
-                }
-            }
+            route(todoRepository);
         }
     }
 
