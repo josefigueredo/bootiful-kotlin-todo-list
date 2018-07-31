@@ -119,4 +119,37 @@ class RouteConfigTest {
 In the applciatio I used Spring Data Reactive Mongo using the Embedded Mongo server in order to test the my repositories. 
 For this use case I did not use the ReactiveMongoRepository auto magical interface of Spring Data. The my decision way because I used an Hexagonal Architectural approach.
 Under this point ov view using the instant repository interface I had a dirty domain layer that should be as mutch as possible free from any framework.
-For satisfy this requirement I defined a my TodoRepository interface that is then implemented on a specific TodoMongoRepository
+For satisfy this requirement I defined a my TodoRepository interface that is then implemented on a specific TodoMongoRepository, the only 
+library dependency is on Reactor that is in any case a reactive stream compatible library.
+
+it.valeriovaudi.todolist.core.repository.TodoRepository
+```kotlin
+
+interface TodoRepository {
+
+    fun insert(todo: Todo): Mono<Todo>
+    fun findOne(todoId: String, userName: String): Mono<Todo>
+    fun findAll(userName: String, date: LocalDate): Flux<Todo>
+    fun update(userName: String, todoId: String, todo: String) : Mono<Todo>
+    fun delete(todoId: String, userName: String) : Mono<Todo>
+}
+```
+
+it.valeriovaudi.todolist.adapter.repository.TodoMongoRepository
+```kotlin
+
+override fun insert(todo: Todo): Mono<Todo> = reactiveMongoTemplate.save(todo)
+
+    override fun findOne(todoId: String, userName: String): Mono<Todo> =
+            reactiveMongoTemplate.findOne(Query.query(Criteria("id").`is`(todoId)
+                    .and("userName").`is`(userName)),
+                    Todo::class.java)
+
+    override fun findAll(userName: String, date: LocalDate): Flux<Todo> = reactiveMongoTemplate.find(Query.query(Criteria("userName").`is`(userName).and("date")
+            .gte(LocalDateTime.of(date, LocalTime.MIN)).lte(LocalDateTime.of(date, LocalTime.MAX))), Todo::class.java);
+
+    override fun update(userName: String, todoId: String, todo: String) = findOne(todoId, userName).flatMap { Mono.just(it.copy(id = it.id,userName = it.userName,date = it.date, todo = todo)) }.flatMap { reactiveMongoTemplate.save(it) }
+
+    override fun delete(todoId: String, userName: String) = findOne(todoId, userName).flatMap { reactiveMongoTemplate.remove(it).then(Mono.just(it)) }
+```
+
