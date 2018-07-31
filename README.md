@@ -66,4 +66,4 @@ object RouteConfig {
 }
 ```
 In order to load this configuration I use it on the main app file and add this routes as initializer like in the figure 
-![GitHub Logo](https://github.com/mrFlick72/bootiful-kotlin-todo-list/images/routes_config.png)
+![](https://github.com/mrFlick72/bootiful-kotlin-todo-list/blob/master/images/routes_config.png)
