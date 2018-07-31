@@ -48,11 +48,9 @@ object RouteConfig {
 
             router {
                 POST("/todo/item") {
-                    ...
-                }
-
-                GET("/todo/item/{id}") {
-                   ...
+                    Mono.zip(it.principal(), it.bodyToMono(TodoRepresentation::class.java))
+                            .flatMap { todoRepository.insert(Todo(it.t2.id, it.t1.name, it.t2.date, it.t2.todo)) }
+                            .flatMap { ServerResponse.created(URI.create("/todo/item/%s".format(it.id))).build() }
                 }
 
                 ...
@@ -68,3 +66,51 @@ A very important and notable thing hear is about context definition.
 For configure my routes I use the it.valeriovaudi.todolist.web.config.RouteConfig kotlin singleton and use it 
 in order to load this configuration I use it on the main app file and add this routes as initializer like in the figure 
 ![](https://github.com/mrFlick72/bootiful-kotlin-todo-list/blob/master/images/routes_config.png)
+
+On the Test is important to add the same initializer on the test context because the routes of functional endpoints are not 
+loaded on the test context even in Java classic bean definition, and for this reason is not possible to use the @WebFluxTest annotation. 
+I solved this problem using a TestContextInitializer kotlin class in wich I provide the required initializer to the test context the code is very simple :
+
+```kotlin
+class TestContextInitializer : ApplicationContextInitializer<GenericApplicationContext> {
+    override fun initialize(applicationContext: GenericApplicationContext) {
+        RepositoryConfig.beans().initialize(applicationContext)
+        RouteConfig.routes().initialize(applicationContext)
+    }
+}
+```
+
+then we can use it on the real test class using a complete spring boot test context and use a WebTestClient in order to 
+test the service call. The class is like below, note the WebTestClient definition with lateinit useful because 
+it on the compile time is null but because it will lazy initialized by Spring othervise we should define it as nullable even if it will be never null
+```kotlin
+
+@ContextConfiguration(initializers = [TestContextInitializer::class])
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@RunWith(SpringRunner::class)
+class RouteConfigTest { 
+
+    ...
+    
+    @Autowired
+    private lateinit var webClient: WebTestClient
+
+
+    @Test
+    @WithMockUser
+    fun `find all the todo in the list`() {
+        val actual = TodoTestCaseInitializer.giveAnOrderedTodoRepresentationListByIdFor(
+                this.webClient.get().uri("/todo/item").exchange().expectStatus().isOk
+                        .returnResult(TodoRepresentation::class.java)
+                        .responseBody.collectList().block()
+                        .orEmpty())
+
+
+        val expected = TodoTestCaseInitializer.giveAnOrderedTodoRepresentationListById()
+
+        Assert.assertThat(actual, Is.`is`(expected))
+    }
+ 
+ ...
+}
+```
