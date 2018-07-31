@@ -36,12 +36,9 @@ The web layer is implemented with the newest reactive stack based in this sample
 enough include the tomcat-starter in order to switch on tomcat as web server since that Spring Boot 2.x include 
 as embedded Tomcat a version of Tomcat that support the Servlet 3.1+ version that support the No Blocking IO.
 
-Web Flux support either annotation and Functional Endpoints via a Route DSL definition. For this sample I choose of use a 
-more kotlin idiomatic way for configure my endpoints and for this reason I used the kotlin route dsl, 
-a very cool and readable way in order to define webflux routes.
-
-A very important and notable thing is about context definition. 
-For configure my routes I use the it.valeriovaudi.todolist.web.config.RouteConfig kotlin singleton the code was like below
+Web Flux support either annotation and Functional Endpoints via a Route DSL definition. For this sample I choose a 
+more kotlin idiomatic way for configure my endpoints. For this reason I used the kotlin route dsl, 
+a very cool and readable way in order to define webflux routes. The routes definition was liek the code below:
 ```kotlin
 object RouteConfig {
 
@@ -65,5 +62,9 @@ object RouteConfig {
 
 }
 ```
-In order to load this configuration I use it on the main app file and add this routes as initializer like in the figure 
+Very simple and readable!!!
+
+A very important and notable thing hear is about context definition. 
+For configure my routes I use the it.valeriovaudi.todolist.web.config.RouteConfig kotlin singleton and use it 
+in order to load this configuration I use it on the main app file and add this routes as initializer like in the figure 
 ![](https://github.com/mrFlick72/bootiful-kotlin-todo-list/blob/master/images/routes_config.png)
