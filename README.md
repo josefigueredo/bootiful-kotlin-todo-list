@@ -114,3 +114,9 @@ class RouteConfigTest {
  ...
 }
 ```
+
+## Mongo as data store
+In the applciatio I used Spring Data Reactive Mongo using the Embedded Mongo server in order to test the my repositories. 
+For this use case I did not use the ReactiveMongoRepository auto magical interface of Spring Data. The my decision way because I used an Hexagonal Architectural approach.
+Under this point ov view using the instant repository interface I had a dirty domain layer that should be as mutch as possible free from any framework.
+For satisfy this requirement I defined a my TodoRepository interface that is then implemented on a specific TodoMongoRepository
