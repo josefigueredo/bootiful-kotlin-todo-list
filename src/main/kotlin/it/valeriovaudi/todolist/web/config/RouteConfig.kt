@@ -1,7 +1,8 @@
 package it.valeriovaudi.todolist.web.config
 
-import com.mongodb.connection.Server
+import it.valeriovaudi.todolist.core.model.Todo
 import it.valeriovaudi.todolist.core.repository.TodoRepository
+import it.valeriovaudi.todolist.web.representation.TodoRepresentation
 import org.springframework.context.support.beans
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.router
@@ -11,8 +12,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import it.valeriovaudi.todolist.web.representation.TodoRepresentation
-import it.valeriovaudi.todolist.core.model.Todo
 
 object RouteConfig {
 
