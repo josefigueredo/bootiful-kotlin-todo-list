@@ -22,6 +22,7 @@ import org.springframework.test.web.reactive.server.returnResult
 import org.springframework.web.reactive.function.BodyInserter
 import org.springframework.web.reactive.function.BodyInserters
 import reactor.core.publisher.Mono
+import reactor.core.publisher.toMono
 import java.time.LocalDateTime
 import java.util.*
 
@@ -86,7 +87,7 @@ class RouteConfigTest {
                 .split("/").last()
 
 
-        val actual = todoMongoRepository.findOne(newTodoId, "user").block();
+        val actual = todoMongoRepository.findOne(newTodoId, "user").toMono().block();
 
         Assert.assertThat(actual, Is.`is`(Todo(newTodoId, "user", now, "a todo")))
     }
@@ -113,7 +114,7 @@ class RouteConfigTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromObject(TodoRepresentation(todo="a new Todo in list")))
                 .exchange()
-        val actual = todoMongoRepository.findOne(todo1.id!!, "user")
+        val actual = todoMongoRepository.findOne(todo1.id!!, "user").toMono()
                 .map{ TodoRepresentation(it.id, it.date, it.todo) }
                 .block()
 

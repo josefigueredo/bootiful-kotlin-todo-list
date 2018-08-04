@@ -4,6 +4,7 @@ import it.valeriovaudi.todolist.web.representation.TodoRepresentation
 import it.valeriovaudi.todolist.core.model.Todo
 import it.valeriovaudi.todolist.core.repository.TodoRepository
 import reactor.core.publisher.Mono
+import reactor.core.publisher.toMono
 import java.time.LocalDateTime
 import java.util.*
 
@@ -20,15 +21,15 @@ object TodoTestCaseInitializer {
     fun todo3() = Todo(todoId_3, "user", now, "todo3")
 
     fun initMongo(todoMongoRepository: TodoRepository) =
-            Mono.zip(todoMongoRepository.insert(todo1()),
-                    todoMongoRepository.insert(todo2()),
-                    todoMongoRepository.insert(todo3()))
+            Mono.zip(todoMongoRepository.insert(todo1()).toMono(),
+                    todoMongoRepository.insert(todo2()).toMono(),
+                    todoMongoRepository.insert(todo3()).toMono())
 
 
     fun tearDownMongo(todoMongoRepository: TodoRepository) =
-            Mono.zip(todoMongoRepository.delete(todoId = todo1().id!!, userName = "user"),
-                    todoMongoRepository.delete(todoId = todo2().id!!, userName = "user"),
-                    todoMongoRepository.delete(todoId = todo3().id!!, userName = "user"))
+            Mono.zip(todoMongoRepository.delete(todoId = todo1().id!!, userName = "user").toMono(),
+                    todoMongoRepository.delete(todoId = todo2().id!!, userName = "user").toMono(),
+                    todoMongoRepository.delete(todoId = todo3().id!!, userName = "user").toMono())
 
 
     fun giveAnOrderedTodoListById() = listOf(todo1(), todo2(), todo3()).sortedBy { it.id }

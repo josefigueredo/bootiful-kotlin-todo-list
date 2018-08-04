@@ -7,6 +7,8 @@ import org.springframework.context.support.beans
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.router
 import reactor.core.publisher.Mono
+import reactor.core.publisher.toFlux
+import reactor.core.publisher.toMono
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
@@ -23,14 +25,14 @@ object RouteConfig {
             router {
                 POST("/todo/item") {
                     Mono.zip(it.principal(), it.bodyToMono(TodoRepresentation::class.java))
-                            .flatMap { todoRepository.insert(Todo(it.t2.id, it.t1.name, it.t2.date, it.t2.todo)) }
+                            .flatMap { todoRepository.insert(Todo(it.t2.id, it.t1.name, it.t2.date, it.t2.todo)).toMono() }
                             .flatMap { ServerResponse.created(URI.create("/todo/item/%s".format(it.id))).build() }
                 }
 
                 GET("/todo/item/{id}") {
                     val todoId = it.pathVariable("id")
                     it.principal()
-                            .flatMap { todoRepository.findOne(todoId, it.name) }
+                            .flatMap { todoRepository.findOne(todoId, it.name).toMono() }
                             .map { Mono.just(TodoRepresentation(it.id, it.date, it.todo)) }
                             .flatMap { ServerResponse.ok().body(it, TodoRepresentation::class.java) }
 
@@ -46,20 +48,23 @@ object RouteConfig {
                             }.orElse(LocalDate.now())
 
                     it.principal()
-                            .flatMap { ServerResponse.ok().body(todoRepository.findAll(it.name, day).map { TodoRepresentation(it.id, it.date, it.todo) }, TodoRepresentation::class.java) }
+                            .flatMap {
+                                ServerResponse.ok().body(todoRepository.findAll(it.name, day).toFlux()
+                                        .map { TodoRepresentation(it.id, it.date, it.todo) }, TodoRepresentation::class.java)
+                            }
                 }
 
                 PUT("/todo/item/{id}") {
                     val todoId = it.pathVariable("id")
                     Mono.zip(it.principal(), it.bodyToMono(TodoRepresentation::class.java))
-                            .flatMap { todoRepository.update(it.t1.name, todoId, it.t2.todo) }
+                            .flatMap { todoRepository.update(it.t1.name, todoId, it.t2.todo).toMono() }
                             .flatMap { ServerResponse.noContent().build() }
                 }
 
                 DELETE("/todo/item/{id}") {
                     val todoId = it.pathVariable("id")
                     it.principal()
-                            .flatMap { todoRepository.delete(todoId, it.name) }
+                            .flatMap { todoRepository.delete(todoId, it.name).toMono() }
                             .flatMap { ServerResponse.noContent().build() }
                 }
             }
