@@ -67,7 +67,8 @@ For configure my routes I use the it.valeriovaudi.todolist.web.config.RouteConfi
 in order to load this configuration I use it on the main app file and add this routes as initializer like in the figure 
 ![](https://github.com/mrFlick72/bootiful-kotlin-todo-list/blob/master/images/routes_config.png)
 
-On the Test is important to add the same initializer on the test context because the routes of functional endpoints are not 
+## Testing
+On the Test is important to add the same initializer of the main application context on the test context because the routes of functional endpoints are not 
 loaded on the test context even in Java classic bean definition, and for this reason is not possible to use the @WebFluxTest annotation. 
 I solved this problem using a TestContextInitializer kotlin class in wich I provide the required initializer to the test context the code is very simple :
 
@@ -82,7 +83,10 @@ class TestContextInitializer : ApplicationContextInitializer<GenericApplicationC
 
 then we can use it on the real test class using a complete spring boot test context and use a WebTestClient in order to 
 test the service call. The class is like below, note the WebTestClient definition with lateinit useful because 
-it on the compile time is null but because it will lazy initialized by Spring othervise we should define it as nullable even if it will be never null
+it on the compile time is null but because it will lazy initialized by Spring otherwise we should define it as nullable even if it will be never null. 
+A very cool think in Kotlin is the possibility to provide a name of the test like in groovy, it give a particular meaning of the test. Another notable think is about the security.
+The @WithMockUser annotation is required in order to simulate an authenticated service call.
+
 ```kotlin
 
 @ContextConfiguration(initializers = [TestContextInitializer::class])
