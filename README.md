@@ -153,6 +153,5 @@ class TodoMongoRepository(private val reactiveMongoTemplate: ReactiveMongoTempla
     override fun update(userName: String, todoId: String, todo: String) : Mono<Todo> = findOne(todoId, userName).flatMap { Mono.just(it.copy(id = it.id,userName = it.userName,date = it.date, todo = todo)) }.flatMap { reactiveMongoTemplate.save(it) }
 
     override fun delete(todoId: String, userName: String) : Mono<Todo> = findOne(todoId, userName).flatMap { reactiveMongoTemplate.remove(it).then(Mono.just(it)) }
-}    override fun delete(todoId: String, userName: String) = findOne(todoId, userName).flatMap { reactiveMongoTemplate.remove(it).then(Mono.just(it)) }
 ```
 
