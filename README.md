@@ -125,6 +125,8 @@ For this use case I did not use the ReactiveMongoRepository auto magical interfa
 Under this point of view using the instant repository interface I would have had a dirty domain layer that should be as much as possible free from any framework.
 For satisfy this requirement I defined a my TodoRepository interface that is then implemented on a specific TodoMongoRepository, the only 
 library dependency is on ReactorStream, I relax the Hexagonal requirements of to be free from framework because in the Reactive Java World ReactiveStream is a standard de facto in reactive programming in Java.
+In the real implementation we provide a Reactor implementation with Mono and Flux. In any piece of code that interact with the repository and get a Publisher reactivestream interface, it is possible use 
+the reactor.core.publisher package extension functions toMono() and toFlux().
 
 it.valeriovaudi.todolist.core.repository.TodoRepository
 ```kotlin
